@@ -2,15 +2,29 @@
 let trainedNet;
 let net = new brain.NeuralNetwork();
 let maxSize = 0;
+let meanSize = 0;
 
 function encode(arg) 
 {
     let r =  arg.split('').map(x => (x.charCodeAt(0) / 256));
-    if (r.length < maxSize)
+/*    if (r.length < maxSize)
     {
         let i = r.length;
         for (; i< maxSize;i++) r.push(0);
     }
+*/    
+    if (r.length < meanSize)
+    {
+        // pad
+        let i = r.length;
+        for (; i< meanSize-1;i++) r.push(0);
+    }
+    else
+    {
+        // truncate
+        r = r.slice(0, meanSize);
+    }
+    console.log(r.length);
     return r;
 }
 
@@ -26,6 +40,15 @@ function processTrainingData(data) {
 function train(data) 
 {
     maxSize = Math.max.apply(null, data.map(d=>{return d.input.length;}));
+
+    var sum = data.reduce(function(a, b){
+        return a + b.input.length;
+    }, 0);
+    const len = data.length;
+    console.log("sum=" + sum + ",len=" + len);
+    meanSize = sum / len;
+
+    console.log("average: " + meanSize);
     net.train(processTrainingData(data));
 //    trainedNet = net.toFunction();
 };
